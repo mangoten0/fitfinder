@@ -2,6 +2,10 @@
 
 Short record of product and technical decisions, newest first. Each entry says what was decided and why.
 
+## 2026-10-25: Code lives in a private GitHub repo
+`mangoten0/fitfinder`, branch `master`. Every phase is committed with a matching entry in
+`docs/build-log.md` and `CHANGELOG.md`, so the history explains itself.
+
 ## 2026-10-25: Phase 1 runs in Expo Go; share target waits for a dev build
 Camera and photo picker are included in Expo Go, so Phase 1 is testable today. The share target
 (sharing straight from TikTok, IG, Pinterest) needs native extension code, which only works in a
