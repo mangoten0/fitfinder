@@ -29,7 +29,8 @@ type ProductCardProps = {
 
 /** One search result. Editorial layout: the image well carries the shape, no card chrome. */
 export function ProductCard({ result, onPress }: ProductCardProps) {
-  const { product, kind, savings } = result;
+  const { product, kind, savings, availability } = result;
+  const soldOut = availability === 'sold_out';
 
   const spoken = [
     matchKindSpoken[kind],
@@ -37,6 +38,7 @@ export function ProductCard({ result, onPress }: ProductCardProps) {
     product.retailer,
     formatMoney(product.price),
     savings ? `${formatMoney(savings)} less` : null,
+    soldOut ? 'sold out' : null,
   ]
     .filter(Boolean)
     .join(', ');
@@ -49,7 +51,9 @@ export function ProductCard({ result, onPress }: ProductCardProps) {
       pressedScale={0.98}
       style={styles.card}>
       <View style={styles.well}>
-        <ProductImage imageUrl={product.imageUrl} category={product.category} />
+        <View style={[StyleSheet.absoluteFill, soldOut && styles.soldOutImage]}>
+          <ProductImage imageUrl={product.imageUrl} category={product.category} />
+        </View>
         <View style={styles.tag}>
           <MatchTag kind={kind} savings={savings} />
         </View>
@@ -61,7 +65,14 @@ export function ProductCard({ result, onPress }: ProductCardProps) {
         <Text variant="callout" numberOfLines={2}>
           {product.title}
         </Text>
-        <Text variant="price">{formatMoney(product.price)}</Text>
+        <Text variant="price" tone={soldOut ? 'ink2' : 'ink'}>
+          {formatMoney(product.price)}
+        </Text>
+        {soldOut ? (
+          <Text variant="label" tone="cherry">
+            Sold out
+          </Text>
+        ) : null}
       </View>
     </PressableScale>
   );
@@ -139,5 +150,8 @@ const styles = StyleSheet.create({
   center: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  soldOutImage: {
+    opacity: 0.5,
   },
 });

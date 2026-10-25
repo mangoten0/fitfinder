@@ -1,3 +1,7 @@
+import { callFunction } from '@/lib/backend';
+import type { DetectResponse } from '@/lib/api-types';
+import { prepareForDetection } from '@/lib/images';
+import { isBackendConfigured } from '@/lib/supabase';
 import type { GarmentCategory } from '@/models/product';
 
 import type { NormalizedBox } from './geometry';
@@ -19,8 +23,8 @@ export type DetectedPiece = {
 };
 
 /**
- * Finds the garments in a photo. Phase 1 uses `mockDetector`; Phase 2 swaps in the real
- * server-side detector with the same shape, so no screen code changes.
+ * Finds the garments in a photo. `remoteDetector` is the real one (Google Vision via the
+ * `detect` edge function); `mockDetector` stands in until the backend keys are set.
  */
 export type PieceDetector = {
   detect: (photo: SourcePhoto) => Promise<DetectedPiece[]>;
@@ -43,3 +47,15 @@ export const mockDetector: PieceDetector = {
     ];
   },
 };
+
+/** Real detection: resize on the phone, send to the `detect` edge function. */
+export const remoteDetector: PieceDetector = {
+  detect: async (photo) => {
+    const prepared = await prepareForDetection(photo.uri, photo.width, photo.height);
+    const response = await callFunction<DetectResponse>('detect', { image: prepared.base64 });
+    return response.pieces.map(({ id, category, label, box }) => ({ id, category, label, box }));
+  },
+};
+
+/** The detector the app uses: real once Supabase is configured, the stand-in before that. */
+export const detector: PieceDetector = isBackendConfigured ? remoteDetector : mockDetector;

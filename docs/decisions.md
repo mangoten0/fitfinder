@@ -2,6 +2,26 @@
 
 Short record of product and technical decisions, newest first. Each entry says what was decided and why.
 
+## 2026-10-25: Phase 2 search stack
+- **Supabase** for the backend: auth, database, private storage, and edge functions in one place,
+  with a free tier. All third-party keys live in server secrets, never in the app.
+- **Google Cloud Vision object localization** to find pieces. It returns clothing boxes
+  directly, which is what the split animation needs. Shoes are merged into one pair.
+- **SerpApi Google Lens** for matches instead of building our own catalog. It works on day one
+  without affiliate approvals. Trade-off: it relies on a third party that scrapes Google, and
+  each search costs two Lens calls. Replace with our own catalog if the app takes off.
+- **Skimlinks or Sovrn Commerce** to turn store links into commission links across thousands of
+  retailers with one approval.
+- **Anonymous sign-in** on first launch: no account needed to search, but every request is tied
+  to a user so rate limits work. Global daily caps bound spend if anyone scripts accounts.
+  App Attest / Play Integrity checks come with the development build.
+- **Privacy:** photos for detection are never stored; cropped pieces are uploaded to a private
+  folder only the server can read, and deleted when the search finishes. Searches aren't logged.
+- **Results rules:** exact = first priced exact match; dupe = at most 80% of the exact price and
+  at least $5 less; everything else similar is an alternative. Savings are only claimed against
+  a real exact item. Counterfeits (blocked marketplaces, "replica" wording, cheap luxury-brand
+  listings from unauthorized sellers) are dropped.
+
 ## 2026-10-25: Code lives in a private GitHub repo
 `mangoten0/fitfinder`, branch `master`. Every phase is committed with a matching entry in
 `docs/build-log.md` and `CHANGELOG.md`, so the history explains itself.

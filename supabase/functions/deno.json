@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.ns", "deno.window", "esnext"]
+  },
+  "nodeModulesDir": "none",
+  "lint": {
+    "rules": { "tags": ["recommended"] }
+  },
+  "fmt": {
+    "singleQuote": true,
+    "lineWidth": 110
+  }
+}

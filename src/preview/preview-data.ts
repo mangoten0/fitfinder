@@ -45,8 +45,13 @@ const alternative: Product = {
 };
 
 export const previewResults: MatchResult[] = [
-  { product: exact, kind: 'exact', savings: null },
-  { product: dupe, kind: 'dupe', savings: savings(dupe.price, original) },
-  { product: secondDupe, kind: 'dupe', savings: savings(secondDupe.price, original) },
-  { product: alternative, kind: 'alternative', savings: null },
+  { product: exact, kind: 'exact', savings: null, availability: 'in_stock' },
+  { product: dupe, kind: 'dupe', savings: savings(dupe.price, original), availability: 'in_stock' },
+  {
+    product: secondDupe,
+    kind: 'dupe',
+    savings: savings(secondDupe.price, original),
+    availability: 'unknown',
+  },
+  { product: alternative, kind: 'alternative', savings: null, availability: 'in_stock' },
 ];

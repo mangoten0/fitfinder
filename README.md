@@ -3,7 +3,8 @@
 Expo (React Native) app for iPhone and Android. Visual search for clothes: snap or share a fit,
 the app splits it into pieces, then finds the exact item, cheaper dupes, and in-stock alternatives.
 
-Current status: **Phase 1 complete** (camera, photo picker, split animation on mock data).
+Current status: **Phase 2 complete** (real detection and search, built and waiting on account keys).
+To turn on real search, follow `docs/setup-phase2.md`. Until then the app uses stand-in detection and sample results.
 See `docs/build-log.md` for what's built and `docs/decisions.md` for why.
 
 ## Run it (first time)
@@ -24,13 +25,19 @@ See `docs/build-log.md` for what's built and `docs/decisions.md` for why.
 Press `i` in the terminal to open the iPhone simulator instead (needs Xcode installed, but you
 never open Xcode itself).
 
-## What to check in Phase 1
+## Getting updates
 
-- The app opens on the camera. The first time, it explains the camera before asking.
-- Take a photo of a full outfit, or tap the photos button and pick a screenshot.
-- Watch the split: scan, pieces cut out, pieces drop into the tray. Tap one.
-- Piece detection is a stand-in for now, so the boxes assume a full-body photo.
-- The palette button (dev only) opens the design system screen.
+Pull in VS Code (Source Control > ... > Pull) or run `git pull`. If `package.json` changed,
+run `npm install` before `npx expo start`.
+
+## What to check in Phase 2
+
+- Take a photo or pick a screenshot, tap a piece. The results screen shows the exact item,
+  dupes (cheapest first, with how much less), and alternatives.
+- Drag the max price slider to filter; "See more" reveals the rest.
+- Tap a result to open the store in an in-app browser sheet.
+- Without keys, results say "Sample results". With keys (see docs/setup-phase2.md), pieces come
+  from your real photo and results come from real stores.
 
 ## Design system screen
 
@@ -45,7 +52,10 @@ never open Xcode itself).
 ```
 npm run typecheck
 npm run lint
+npm run test:backend
 ```
+
+`test:backend` needs Deno (`npm install -g deno`).
 
 ## Structure
 
@@ -54,10 +64,12 @@ src/app/            Routes (Expo Router): index (camera), split, results, design
 src/design/         Tokens: palette, typography, spacing, motion, haptics, elevation, theme
 src/components/     Button, GlassIconButton, MatchTag, ProductCard, Skeleton, Sticker,
                     EmptyState, SectionHeader, PriceCapSlider, PressableScale, Grid, PhotoCrop
-src/features/       Screen code by feature: capture, split, results, design-system
+src/features/       Screen code by feature: capture, split, search, results, design-system
+src/lib/            Supabase client, backend calls, image resizing and cropping
 src/models/         Money (whole cents), Product, MatchResult
 src/preview/        Sample data for the design system screen
-docs/               Build log and decisions
+supabase/           Database migration and edge functions (detect, search), Deno
+docs/               Build log, decisions, setup guides
 ```
 
 ## Rules for every screen

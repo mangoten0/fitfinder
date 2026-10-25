@@ -1,5 +1,24 @@
 # Build log
 
+## Phase 2: real detection and search (2026-10-25)
+
+- `supabase/functions/detect`: validates a base64 JPEG, checks rate limits, asks Google Cloud
+  Vision for objects, keeps clothing only, merges shoes, removes duplicates, orders pieces top to
+  bottom, pads boxes slightly.
+- `supabase/functions/search`: checks the crop belongs to the caller, rate limits, signs a
+  5-minute URL, runs Lens exact matches and products in parallel, classifies results, checks
+  stock on the top 10 product pages, wraps affiliate links, deletes the crop.
+- Migration: usage counters (per user and global) with service-role-only functions, private
+  `uploads` bucket (JPEG, 2 MB), insert-only policy scoped to the user's own folder.
+- App: Supabase client with anonymous sign-in and session refresh, image resize and crop on the
+  phone, real detector and search with readable errors, fallback to stand-ins without keys.
+- Results screen: exact match, dupes (cheapest first, savings vs the exact price), alternatives,
+  sold-out handling, price cap filter, curated 6 with "See more", in-app browser, affiliate
+  disclosure.
+- Verified: 14 backend logic tests pass (Deno), functions type-check and lint clean, app
+  type-checks and lints clean, results flow rendered in a browser with sample data.
+- Not verified yet: live calls to Vision and SerpApi (needs account keys; see setup-phase2.md).
+
 ## Phase 1: capture and split (2026-10-25)
 
 - Home is now the camera (expo-camera): shutter with a white blink, flash toggle, photo picker,

@@ -21,12 +21,16 @@ export type Product = {
  */
 export type MatchKind = 'exact' | 'dupe' | 'alternative';
 
+/** Whether the store has it right now. "unknown" when the store doesn't say. */
+export type Availability = 'in_stock' | 'sold_out' | 'unknown';
+
 /** One search result: a product plus how it matches. */
 export type MatchResult = {
   product: Product;
   kind: MatchKind;
   /** How much cheaper than the exact item, when it is cheaper. */
   savings: Money | null;
+  availability: Availability;
 };
 
 export const matchKindTitle: Record<MatchKind, string> = {

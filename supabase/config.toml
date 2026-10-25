@@ -1,0 +1,14 @@
+# Supabase project settings for local development and deploys.
+# Hosted project settings (auth providers, secrets) are set in the Supabase dashboard; see docs/setup-phase2.md.
+project_id = "fitfinder"
+
+[auth]
+# The app signs people in anonymously on first launch so every request is tied to a user
+# (for rate limits) without asking for an account up front.
+enable_anonymous_sign_ins = true
+
+[functions.detect]
+verify_jwt = true
+
+[functions.search]
+verify_jwt = true

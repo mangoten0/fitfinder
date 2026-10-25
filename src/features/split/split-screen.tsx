@@ -17,8 +17,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/empty-state';
 import { GlassIconButton } from '@/components/glass-icon-button';
 import { animate, haptic, radius, space, STAGGER_MS, Text, useTheme } from '@/design';
+import { messageFor } from '@/lib/backend';
 
-import { mockDetector, type DetectedPiece, type SourcePhoto } from './detection';
+import { detector, type DetectedPiece, type SourcePhoto } from './detection';
 import { containRect, pieceRect, trayLayout, type Rect } from './geometry';
 import { PieceSticker, type PieceStage } from './piece-sticker';
 
@@ -73,12 +74,13 @@ function Splitter({ photo }: { photo: SourcePhoto }) {
   const [pieces, setPieces] = useState<DetectedPiece[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('Check your connection and try again.');
   const navigateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Find the pieces.
   useEffect(() => {
     let cancelled = false;
-    mockDetector
+    detector
       .detect(photo)
       .then((found) => {
         if (cancelled) return;
@@ -90,8 +92,10 @@ function Splitter({ photo }: { photo: SourcePhoto }) {
         setStatus('cut');
         haptic('lift');
       })
-      .catch(() => {
-        if (!cancelled) setStatus('error');
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setErrorMessage(messageFor(error));
+        setStatus('error');
       });
     return () => {
       cancelled = true;
@@ -213,7 +217,7 @@ function Splitter({ photo }: { photo: SourcePhoto }) {
                 ) : (
                   <EmptyState
                     title="This photo didn't go through"
-                    message="Check your connection and try again."
+                    message={errorMessage}
                     actionTitle="Try again"
                     onAction={() => {
                       setStatus('scanning');
