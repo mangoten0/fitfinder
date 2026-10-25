@@ -24,6 +24,10 @@ export type Palette = {
   ink3: string;
   /** Text on an ink fill. */
   onInk: string;
+  /** Text and icons drawn directly over a camera feed or photo. Always white. */
+  onPhoto: string;
+  /** Behind the camera feed before it starts. Always black. */
+  photoBackdrop: string;
   /** Dividers and outlines. */
   line: string;
 
@@ -60,6 +64,8 @@ export const lightPalette: Palette = {
   ink2: '#5D5968',
   ink3: '#9A96A5',
   onInk: '#EEEDF1',
+  onPhoto: '#FFFFFF',
+  photoBackdrop: '#000000',
   line: 'rgba(27, 25, 34, 0.12)',
 
   cherry: '#D0243A',
@@ -89,6 +95,8 @@ export const darkPalette: Palette = {
   ink2: '#ABA6B6',
   ink3: '#6D6878',
   onInk: '#131218',
+  onPhoto: '#FFFFFF',
+  photoBackdrop: '#000000',
   line: 'rgba(242, 240, 246, 0.13)',
 
   cherry: '#FF5468',
@@ -113,6 +121,7 @@ export type InkTone =
   | 'ink2'
   | 'ink3'
   | 'onInk'
+  | 'onPhoto'
   | 'cherry'
   | 'onCherry'
   | 'onMarkdown'

@@ -1,6 +1,6 @@
-import { DesignSystemScreen } from '@/screens/design-system-screen';
+import { CaptureScreen } from '@/features/capture/capture-screen';
 
-/** During Phase 0 the app opens on the design system review screen. Phase 1 replaces it with capture. */
+/** Home: the camera, with photo picking alongside it. */
 export default function Index() {
-  return <DesignSystemScreen />;
+  return <CaptureScreen />;
 }

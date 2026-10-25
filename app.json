@@ -38,6 +38,22 @@
             "backgroundColor": "#131218"
           }
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "FitFinder uses the camera so you can snap an outfit and find each piece.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FitFinder opens the photos you pick so it can find the pieces in them.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {

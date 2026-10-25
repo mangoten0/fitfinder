@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Children, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
 import { GlassIconButton, type IconName } from '@/components/glass-icon-button';
+import { Grid } from '@/components/grid';
 import { MatchTag } from '@/components/match-tag';
 import { PriceCapSlider } from '@/components/price-cap-slider';
 import { ProductCard, ProductCardSkeleton } from '@/components/product-card';
@@ -438,29 +439,6 @@ function DroppingSticker({ piece, index, dropKey, lifted, onPress }: DroppingSti
 
 // MARK: Layout helpers
 
-/** Equal-width columns. The last row is padded with empty cells so items never stretch. */
-function Grid({ columns, children }: { columns: number; children: ReactNode }) {
-  const items = Children.toArray(children);
-  const rows: ReactNode[][] = [];
-  for (let start = 0; start < items.length; start += columns) {
-    rows.push(items.slice(start, start + columns));
-  }
-
-  return (
-    <View style={styles.gridRows}>
-      {rows.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.gridRow}>
-          {Array.from({ length: columns }, (_, column) => (
-            <View key={column} style={styles.gridCell}>
-              {row[column] ?? null}
-            </View>
-          ))}
-        </View>
-      ))}
-    </View>
-  );
-}
-
 function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
   return (
     <View style={styles.section}>
@@ -498,16 +476,6 @@ const styles = StyleSheet.create({
   stackXS: { gap: space.xs },
   stackS: { gap: space.s },
   stackL: { gap: space.l },
-  gridRows: {
-    gap: space.l,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    gap: space.m,
-  },
-  gridCell: {
-    flex: 1,
-  },
   swatchItem: {
     gap: space.xs,
   },
