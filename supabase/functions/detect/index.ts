@@ -53,16 +53,25 @@ Deno.serve(
         }),
       },
       15_000,
-    ).catch(() => {
+    ).catch((error: unknown) => {
+      console.error('Vision request did not complete:', error instanceof Error ? error.message : error);
       throw new HttpError(502, 'upstream_failed', "Couldn't scan this photo. Try again.");
     });
 
     const body = (await response.json().catch(() => null)) as {
-      responses?: { localizedObjectAnnotations?: VisionObject[]; error?: unknown }[];
+      error?: { status?: string; message?: string };
+      responses?: { localizedObjectAnnotations?: VisionObject[]; error?: { message?: string } }[];
     } | null;
     const first = body?.responses?.[0];
     if (!response.ok || !first || first.error) {
-      console.error('Vision request failed', response.status, first?.error);
+      // Google puts key, billing, and API-enabled problems in the top-level error. Logged for the
+      // dashboard (Edge Functions > detect > Logs); the key itself is never logged.
+      console.error(
+        'Vision request failed:',
+        response.status,
+        body?.error?.status ?? '',
+        body?.error?.message ?? first?.error?.message ?? 'no details',
+      );
       throw new HttpError(502, 'upstream_failed', "Couldn't scan this photo. Try again.");
     }
 
