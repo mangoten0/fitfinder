@@ -143,6 +143,32 @@ Deno.test('lensItemsFrom cleans items and reads stock flags', () => {
   assert.equal(items[1]?.source, 'shop.example.com');
 });
 
+Deno.test('lensItemsFrom reads visual matches with object prices and exact flags', () => {
+  const items = lensItemsFrom(
+    {
+      visual_matches: [
+        {
+          title: 'Rib knit bodysuit',
+          link: 'https://www2.hm.com/en_us/productpage.123.html',
+          source: 'H&M',
+          price: { value: '$18*', extracted_value: 18, currency: '$' },
+          in_stock: true,
+          exact_matches: true,
+          image: 'https://img.example.com/b.jpg',
+        },
+        { title: 'Pinterest pin', link: 'https://www.pinterest.com/pin/1/', source: 'Pinterest' },
+      ],
+    },
+    'visual_matches',
+  );
+  assert.equal(items.length, 2);
+  assert.deepEqual(items[0]?.price, { cents: 1800, currency: 'USD' });
+  assert.equal(items[0]?.flaggedExact, true);
+  assert.equal(items[0]?.inStock, true);
+  assert.equal(items[1]?.price, null);
+  assert.equal(items[1]?.flaggedExact, false);
+});
+
 // MARK: classification
 
 const item = (title: string, link: string, cents: number | null, source = 'Store'): LensItem => ({
@@ -152,6 +178,7 @@ const item = (title: string, link: string, cents: number | null, source = 'Store
   imageUrl: null,
   price: cents === null ? null : { cents, currency: 'USD' },
   inStock: null,
+  flaggedExact: false,
 });
 
 Deno.test('classify finds the exact item, cheaper dupes, and alternatives', () => {

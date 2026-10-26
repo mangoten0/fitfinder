@@ -10,14 +10,20 @@ export type LensItem = {
   price: MoneyDTO | null;
   /** true / false when the result says so, null when it doesn't. */
   inStock: boolean | null;
+  /** Google marked this visual match as the same item as the photo. */
+  flaggedExact: boolean;
 };
 
-export type LensType = 'exact_matches' | 'products';
+/**
+ * The two Lens searches each piece runs. `products` was discontinued by Google, so similar items
+ * come from `visual_matches`, whose shopping listings carry a price.
+ */
+export type LensType = 'exact_matches' | 'visual_matches';
 
-/** The array each Lens result type comes back under. Checked in order. */
-const RESULT_KEYS: Record<LensType, string[]> = {
-  exact_matches: ['exact_matches'],
-  products: ['visual_matches', 'products', 'shopping_results'],
+/** The array each Lens result type comes back under. */
+const RESULT_KEYS: Record<LensType, string> = {
+  exact_matches: 'exact_matches',
+  visual_matches: 'visual_matches',
 };
 
 function asHttpsUrl(value: unknown): string | null {
@@ -34,12 +40,22 @@ function asText(value: unknown): string {
   return typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
 }
 
-/** Pulls the listing array out of a SerpApi Google Lens response and cleans each item. */
+/** How many listings a response holds, before cleaning. For logs. */
+export function rawCount(response: unknown, type: LensType): number {
+  if (!response || typeof response !== 'object') return 0;
+  const raw = (response as Record<string, unknown>)[RESULT_KEYS[type]];
+  return Array.isArray(raw) ? raw.length : 0;
+}
+
+/**
+ * Pulls the listing array out of a SerpApi Google Lens response and cleans each item.
+ * Exact matches give price as "$48.00" plus `extracted_price`; visual matches give an object
+ * like { value: "$48*", extracted_value: 48, currency: "$" }. parsePrice reads both.
+ */
 export function lensItemsFrom(response: unknown, type: LensType): LensItem[] {
   if (!response || typeof response !== 'object') return [];
-  const body = response as Record<string, unknown>;
-  const raw = RESULT_KEYS[type].map((key) => body[key]).find(Array.isArray) as unknown[] | undefined;
-  if (!raw) return [];
+  const raw = (response as Record<string, unknown>)[RESULT_KEYS[type]];
+  if (!Array.isArray(raw)) return [];
 
   const items: LensItem[] = [];
   for (const entry of raw) {
@@ -68,6 +84,7 @@ export function lensItemsFrom(response: unknown, type: LensType): LensItem[] {
       imageUrl: asHttpsUrl(item.image) ?? asHttpsUrl(item.thumbnail),
       price: parsePrice(item.price, item.extracted_price),
       inStock,
+      flaggedExact: type === 'visual_matches' && item.exact_matches === true,
     });
   }
   return items;

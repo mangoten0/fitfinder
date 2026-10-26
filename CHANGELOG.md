@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2
+- Search uses Google Lens `visual_matches` for dupes and alternatives (Google discontinued the
+  `products` type, so every search came back with no matches)
+- Visual matches Google flags as the same item count as the exact match when the exact search
+  has nothing priced
+- Search logs result counts and Vision logs Google's error reason, for debugging
+
 ## 0.3.1
 - Fix "Sign-in required" on new Supabase projects: the functions now read the new publishable/secret
   keys (falling back to the legacy anon/service_role keys) and check the user token themselves, with

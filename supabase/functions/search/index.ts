@@ -11,7 +11,7 @@ import { z } from 'npm:zod@3';
 import { affiliateConfigFrom, affiliateUrl } from '../_shared/affiliate.ts';
 import { classify, type Candidate } from '../_shared/classify.ts';
 import { fetchWithTimeout, handler, HttpError, json, readJson } from '../_shared/http.ts';
-import { lensItemsFrom, lensRequestUrl, type LensType } from '../_shared/lens.ts';
+import { lensItemsFrom, lensRequestUrl, rawCount, type LensType } from '../_shared/lens.ts';
 import { consumeQuota } from '../_shared/quota.ts';
 import { checkProductPage, type PageCheck } from '../_shared/stock.ts';
 import { optionalEnv, requiredEnv, requireUser, serviceClient } from '../_shared/supabase.ts';
@@ -66,17 +66,33 @@ Deno.serve(
       }
       const imageUrl = signed.data.signedUrl;
 
-      const [exactResult, productResult] = await Promise.allSettled([
+      const [exactResult, visualResult] = await Promise.allSettled([
         lens('exact_matches', imageUrl, apiKey),
-        lens('products', imageUrl, apiKey),
+        lens('visual_matches', imageUrl, apiKey),
       ]);
-      if (exactResult.status === 'rejected' && productResult.status === 'rejected') {
+      if (exactResult.status === 'rejected' && visualResult.status === 'rejected') {
         throw new HttpError(502, 'upstream_failed', "Couldn't reach the stores. Try again.");
       }
 
-      const exact = exactResult.status === 'fulfilled' ? lensItemsFrom(exactResult.value, 'exact_matches') : [];
-      const products = productResult.status === 'fulfilled' ? lensItemsFrom(productResult.value, 'products') : [];
-      const { candidates, referencePrice } = classify(exact, products);
+      const exactBody = exactResult.status === 'fulfilled' ? exactResult.value : null;
+      const visualBody = visualResult.status === 'fulfilled' ? visualResult.value : null;
+      const visual = lensItemsFrom(visualBody, 'visual_matches');
+      // Visual matches Google flagged as the same item count as exact if the exact search has
+      // nothing with a price.
+      const exact = [...lensItemsFrom(exactBody, 'exact_matches'), ...visual.filter((item) => item.flaggedExact)];
+      const { candidates, referencePrice } = classify(exact, visual);
+
+      // Counts only, no URLs or image data. Shows where results drop off when a search comes back empty.
+      console.log(
+        'search counts',
+        JSON.stringify({
+          exactRaw: rawCount(exactBody, 'exact_matches'),
+          visualRaw: rawCount(visualBody, 'visual_matches'),
+          exactPriced: exact.filter((item) => item.price).length,
+          visualPriced: visual.filter((item) => item.price).length,
+          candidates: candidates.length,
+        }),
+      );
 
       // Check the top listings' pages: drop dead links, mark sold-out items.
       const checks: PageCheck[] = await Promise.all(
