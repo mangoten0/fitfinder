@@ -101,6 +101,8 @@ stand-in boxes), and the results screen no longer says "Sample results".
 ## If something fails
 
 - **"Couldn't connect"** right away: anonymous sign-ins are off, or `.env.local` has a typo.
+- **"Sign-in required"**: the functions were deployed before 0.3.1. Pull and redeploy both
+  functions. If it still shows, check the function logs for a line starting `requireUser rejected`.
 - **"Server is missing ..."**: that secret isn't set. Run the matching `secrets set` command.
 - **"Too many searches"**: you hit a rate limit. Wait a minute, or raise the caps above.
 - Function logs: Supabase dashboard > Edge Functions > pick the function > Logs.

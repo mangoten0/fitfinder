@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1
+- Fix "Sign-in required" on new Supabase projects: the functions now read the new publishable/secret
+  keys (falling back to the legacy anon/service_role keys) and check the user token themselves, with
+  the platform JWT check off since it only understands legacy keys
+- App starts a fresh anonymous session and retries once if a saved session is rejected
+- Rejected tokens are logged (without the token) in the function logs
+
 ## 0.3.0 (Phase 2)
 - Supabase backend: `detect` (Google Cloud Vision) and `search` (Google Lens via SerpApi) edge functions
 - Results sorted into exact match, dupes (with savings), and alternatives; counterfeits filtered out

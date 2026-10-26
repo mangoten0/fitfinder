@@ -2,7 +2,7 @@ import { randomUUID } from 'expo-crypto';
 
 import type { DetectedPiece, SourcePhoto } from '@/features/split/detection';
 import type { MatchDTO, SearchResponse } from '@/lib/api-types';
-import { BackendError, callFunction, ensureUserId } from '@/lib/backend';
+import { BackendError, callFunctionOnce, ensureUserId, withFreshSessionRetry } from '@/lib/backend';
 import { bytesFromBase64, cropPiece } from '@/lib/images';
 import { getSupabase, isBackendConfigured } from '@/lib/supabase';
 import { money, type Money } from '@/models/money';
@@ -45,18 +45,19 @@ export async function searchPiece(photo: SourcePhoto, piece: PieceToSearch): Pro
     return { results: previewResults, referencePrice: money(4800), isSample: true };
   }
 
-  const userId = await ensureUserId();
   const crop = await cropPiece(photo.uri, photo.width, photo.height, piece.box);
-  const path = `${userId}/${randomUUID()}.jpg`;
+  const response = await withFreshSessionRetry(async () => {
+    const userId = await ensureUserId();
+    const path = `${userId}/${randomUUID()}.jpg`;
+    const upload = await getSupabase()
+      .storage.from('uploads')
+      .upload(path, bytesFromBase64(crop.base64), { contentType: 'image/jpeg', upsert: false });
+    if (upload.error) {
+      throw new BackendError('network', "Couldn't upload the photo. Check your internet and try again.");
+    }
+    return callFunctionOnce<SearchResponse>('search', { path, category: piece.category });
+  });
 
-  const upload = await getSupabase()
-    .storage.from('uploads')
-    .upload(path, bytesFromBase64(crop.base64), { contentType: 'image/jpeg', upsert: false });
-  if (upload.error) {
-    throw new BackendError('network', "Couldn't upload the photo. Check your internet and try again.");
-  }
-
-  const response = await callFunction<SearchResponse>('search', { path, category: piece.category });
   return {
     results: response.results.map((dto) => toMatchResult(dto, piece.category)),
     referencePrice: response.referencePrice

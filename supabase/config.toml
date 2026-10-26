@@ -7,8 +7,10 @@ project_id = "fitfinder"
 # (for rate limits) without asking for an account up front.
 enable_anonymous_sign_ins = true
 
+# The platform JWT check only understands the legacy keys, so it's off. Each function checks the
+# user's token itself in requireUser (supabase/functions/_shared/supabase.ts) before doing any work.
 [functions.detect]
-verify_jwt = true
+verify_jwt = false
 
 [functions.search]
-verify_jwt = true
+verify_jwt = false
